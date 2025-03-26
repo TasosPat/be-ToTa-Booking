@@ -12,18 +12,16 @@ app.get('/api/health', (req, res) => {
     res.status(200).send({ msg: "Server is running!" });
 });
 
-// app.get('/api', getDoc);
-
 app.get('/api/services', getServices);
 
 app.post('/api/users', addUser);
 
 
-// app.use((err, req, res, next) => {
-//     if(err.code === "22P02" || err.code === "23502") {
-//       res.status(400).send({ msg: 'Bad Request' });
-//     } else next(err);
-//   });
+app.use((err, req, res, next) => {
+    if(err.code === "22P02" || err.code === "23502") {
+      res.status(400).send({ msg: 'Bad Request' });
+    } else next(err);
+  });
 
 //   app.use((err, req, res, next) => {
 //     if(err.code === "23503") {
