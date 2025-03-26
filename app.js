@@ -8,6 +8,10 @@ app.use(cors());
 
 app.use(express.json());
 
+app.get('/api/health', (req, res) => {
+    res.status(200).send({ msg: "Server is running!" });
+});
+
 // app.get('/api', getDoc);
 
 app.get('/api/services', getServices);
