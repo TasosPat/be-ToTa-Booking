@@ -62,17 +62,80 @@ describe("GET /api/services", () => {
           expect(res.body.msg).toBe("Bad Request");
         });
     });
-    // test("POST 404: Responds with an appropriate status and error message when provided with a bad topic (no username)", () => {
-    //   return request(app)
-    //     .post("/api/users")
-    //     .send({
-    //         name: "Tasos",
-    //         email: "tasos@gmail.com",
-    //         phone_no: "6969696969"
-    //       })
-    //     .expect(404)
-    //     .then((res) => {
-    //       expect(res.body.msg).toBe("User doesn't exist");
-    //     });
-    // });
     })
+
+    describe("GET /api/users/:user_id", () => {
+        test("200: Responds with a single user", () => {
+          return request(app)
+            .get("/api/users/1")
+            .expect(200)
+            .then((response) => {
+              const user = response.body.user;
+              expect(user.name).toBe('Alice Johnson');
+              expect(user.email).toBe('alice@example.com');
+              expect(user.phone_no).toBe('123-456-7890');
+            });
+        });
+        test('GET:404 sends an appropriate status and error message when given a valid but non-existent id', () => {
+          return request(app)
+            .get('/api/users/999')
+            .expect(404)
+            .then((response) => {
+              console.log(response);
+              expect(response.body.msg).toBe('No user found for user_id: 999');
+            });
+        });
+        test('GET:400 sends an appropriate status and error message when given an invalid id', () => {
+          return request(app)
+            .get('/api/users/not-a-user')
+            .expect(400)
+            .then((response) => {
+              expect(response.body.msg).toBe('Bad Request');
+            });
+        });
+      });
+
+      describe("GET /api/bookings/:user_id", () => {
+        test("200: Responds with all bookings", () => {
+          return request(app)
+            .get("/api/bookings")
+            .expect(200)
+            .then((response) => {
+              const bookings = response.body.bookings;
+              expect(bookings[0].user_id).toBe(1);
+              expect(bookings[0].service_id).toBe(1);
+              expect(bookings[0].status).toBe("confirmed");
+            });
+        });
+        test("200: Responds with all bookings for service_id 2", () => {
+          return request(app)
+            .get("/api/bookings?service_id=2")
+            .expect(200)
+            .then((response) => {
+              const bookings = response.body.bookings;
+              expect(bookings[0].user_id).toBe(4);
+              expect(bookings[0].status).toBe("cancelled");
+            });
+        });
+        test("200: Responds with all bookings for user_id 3", () => {
+          return request(app)
+            .get("/api/bookings?user_id=3")
+            .expect(200)
+            .then((response) => {
+              const bookings = response.body.bookings;
+              expect(bookings[0].service_id).toBe(5);
+              expect(bookings[0].status).toBe("confirmed");
+            });
+        });
+        test("200: Responds with all bookings for booking_id 5", () => {
+          return request(app)
+            .get("/api/bookings?booking_id=5")
+            .expect(200)
+            .then((response) => {
+              const bookings = response.body.bookings;
+              expect(bookings[0].user_id).toBe(5);
+              expect(bookings[0].service_id).toBe(4);
+              expect(bookings[0].status).toBe("confirmed");
+            });
+        });
+      });
