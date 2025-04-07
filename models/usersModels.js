@@ -45,4 +45,18 @@ function fetchBookings({ user_id, service_id, booking_id }) {
   })
 }
 
-module.exports = {insertUser, fetchUserByID, fetchBookings};
+function removeUser(user_id) {
+  return db
+    .query(`DELETE FROM users WHERE user_id = $1`, [user_id])
+    .then(({ rowCount }) => {
+      if (rowCount === 0) {
+        return Promise.reject({
+          msg: `User with ID "${user_id}" is not found`,
+          status: 404,
+        });
+      }
+      // { msg: 'User deleted successfully' }
+    });
+}
+
+module.exports = {insertUser, fetchUserByID, fetchBookings, removeUser};

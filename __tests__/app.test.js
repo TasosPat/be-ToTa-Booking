@@ -195,3 +195,30 @@ describe("GET /api/services", () => {
             });
         });
         })
+        describe("DELETE /api/users/:user_id", () => {
+          test('204: gets an empty object for a deleted user', () => {
+            return request(app)
+              .delete("/api/users/1")
+              .expect(204)
+              .then((res) => {
+                expect(res.body).toEqual({});
+              })                      
+          });
+          test("DELETE 404: Responds with an appropriate status and error message when provided with a user that doesn't exist", () => {
+            return request(app)
+              .delete("/api/users/7")
+              .expect(404)
+              .then((res) => {
+                expect(res.body.msg).toBe('User with ID "7" is not found')
+              })
+          });
+          test("DELETE 400: Responds with an appropriate status and error message when provided with an invalid user_id", () => {
+            return request(app)
+              .delete("/api/users/not-an-id")
+              .expect(400)
+              .then((res) => {
+                expect(res.body.msg).toBe('Bad Request')
+              })
+          });
+          })
+            
