@@ -59,4 +59,4 @@ function removeUser(user_id) {
     });
 }
 
-module.exports = {insertUser, fetchUserByID, fetchBookings, removeUser};
+module.exports = {insertUser, fetchUserByID, fetchBookings, removeUser};``

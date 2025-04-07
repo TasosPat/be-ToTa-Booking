@@ -14,4 +14,17 @@ function insertBooking({user_id, service_id, booking_time}) {
     })
 }
 
-module.exports = { insertBooking };
+function removeBooking(booking_id) {
+  return db
+    .query(`DELETE FROM bookings WHERE booking_id = $1`, [booking_id])
+    .then(({ rowCount }) => {
+      if (rowCount === 0) {
+        return Promise.reject({
+          msg: `Booking with ID "${booking_id}" is not found`,
+          status: 404,
+        });
+      }
+    });
+}
+
+module.exports = { insertBooking, removeBooking };

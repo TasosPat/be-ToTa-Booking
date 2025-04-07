@@ -3,7 +3,7 @@ const cors = require('cors');
 const app = express();
 const { getServices } = require("./controllers/servicesControllers.js");
 const { addUser, getUserByID, getBookings, deleteUser } = require("./controllers/usersControllers.js");
-const { addBooking } = require("./controllers/bookingControllers.js");
+const { addBooking, deleteBooking } = require("./controllers/bookingControllers.js");
 
 app.use(cors());
 
@@ -23,6 +23,8 @@ app.delete('/api/users/:user_id', deleteUser);
 app.get('/api/bookings', getBookings);
 
 app.post('/api/bookings', addBooking);
+
+app.delete('/api/bookings/:booking_id', deleteBooking);
 
 
 app.use((err, req, res, next) => {
