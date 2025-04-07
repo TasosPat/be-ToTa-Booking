@@ -139,3 +139,59 @@ describe("GET /api/services", () => {
             });
         });
       });
+      describe("POST /api/bookings", () => {
+        test("return the new booking", () => {
+            const bookingObj = {
+                user_id: 5,
+                service_id: 1,
+                booking_time: '2025-04-24 14:00:00'
+              };
+              const expected = new Date(bookingObj.booking_time).toISOString();
+          return request(app)
+            .post("/api/bookings")
+            .send(bookingObj)
+            .expect(201)
+            .then((res) => {
+              const received = new Date(res.body.booking.booking_time).toISOString();
+              expect(res.body.booking.user_id).toBe(5);
+              expect(res.body.booking.service_id).toBe(1);
+              expect(received).toBe(expected);
+            });
+        });
+        test("POST 400: Responds with an appropriate status and error message when provided with no service_id", () => {
+          return request(app)
+            .post("/api/bookings")
+            .send({
+              user_id: 5,
+              booking_time: '2025-04-24 14:00:00'
+            })
+            .expect(400)
+            .then((res) => {
+              expect(res.body.msg).toBe("Bad Request");
+            });
+        });
+        test("POST 400: Responds with an appropriate status and error message when provided with no user_id", () => {
+          return request(app)
+            .post("/api/bookings")
+            .send({
+              service_id: 1,
+              booking_time: '2025-04-24 14:00:00'
+            })
+            .expect(400)
+            .then((res) => {
+              expect(res.body.msg).toBe("Bad Request");
+            });
+        });
+        test("POST 400: Responds with an appropriate status and error message when provided with no booking time", () => {
+          return request(app)
+            .post("/api/bookings")
+            .send({
+              user_id: 5,
+              service_id: 1  
+            })
+            .expect(400)
+            .then((res) => {
+              expect(res.body.msg).toBe("Bad Request");
+            });
+        });
+        })
