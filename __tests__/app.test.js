@@ -246,4 +246,22 @@ describe("GET /api/services", () => {
                   expect(res.body.msg).toBe('Bad Request')
                 })
             });
-            })  
+            })
+            describe.only("GET /api/users",() => {
+              test("200: Responds with all users", () => {
+                return request(app)
+                .get('/api/users')
+                .expect(200)
+                .then(({body}) => {
+                  expect(body.users).toBeInstanceOf(Array);
+                  expect(body.users.length).toBeGreaterThan(0);
+                  body.users.forEach((user) => {
+                    expect(user).toMatchObject({
+                      name: expect.any(String),
+                      email: expect.any(String),
+                      phone_no: expect.any(String),
+                    });
+                  });
+                })
+              });
+            });

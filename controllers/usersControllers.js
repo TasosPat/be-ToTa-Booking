@@ -1,4 +1,4 @@
-const {insertUser, fetchUserByID, fetchBookings, removeUser } = require("../models/usersModels.js");
+const {insertUser, fetchUserByID, fetchBookings, removeUser, fetchUsers } = require("../models/usersModels.js");
 
 function addUser(req, res, next) {
     const newUser = req.body;
@@ -44,4 +44,14 @@ function deleteUser(req, res, next) {
     })
 }
 
-module.exports = {addUser, getUserByID, getBookings, deleteUser};
+function getUsers(req, res, next) {
+    fetchUsers()
+    .then((users) => {
+        res.status(200).send({users})
+    })
+    .catch((err) => {
+        next(err);
+    })
+}
+
+module.exports = {addUser, getUserByID, getBookings, deleteUser, getUsers};

@@ -59,4 +59,12 @@ function removeUser(user_id) {
     });
 }
 
-module.exports = {insertUser, fetchUserByID, fetchBookings, removeUser};``
+function fetchUsers() {
+  return db
+  .query(`SELECT * FROM users`)
+  .then(({ rows }) => {
+    return rows;
+  })
+}
+
+module.exports = {insertUser, fetchUserByID, fetchBookings, removeUser, fetchUsers};
