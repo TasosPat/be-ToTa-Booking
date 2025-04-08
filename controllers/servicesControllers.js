@@ -1,4 +1,4 @@
-const {fetchServices} = require("../models/servicesModels.js");
+const {fetchServices, insertService} = require("../models/servicesModels.js");
 
 function getServices(req, res, next) {
     fetchServices()
@@ -7,4 +7,15 @@ function getServices(req, res, next) {
     })
 }
 
-module.exports = {getServices};
+function addService(req, res, next) {
+    const newService = req.body;
+    insertService(newService)
+    .then((service) => {
+        res.status(201).send({service});
+    })
+    .catch((err) => {
+        next(err);
+    })
+}
+
+module.exports = {getServices, addService};

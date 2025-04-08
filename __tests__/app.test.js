@@ -247,7 +247,7 @@ describe("GET /api/services", () => {
                 })
             });
             })
-            describe.only("GET /api/users",() => {
+            describe("GET /api/users",() => {
               test("200: Responds with all users", () => {
                 return request(app)
                 .get('/api/users')
@@ -265,3 +265,59 @@ describe("GET /api/services", () => {
                 })
               });
             });
+            describe("POST /api/services", () => {
+              test("return the new service", () => {
+                  const serviceObj = {
+                      name: "Body Painting",
+                      duration: 60,
+                      price: "60.00",
+                      description: "A full body painting design"
+                    };
+                return request(app)
+                  .post("/api/services")
+                  .send(serviceObj)
+                  .expect(201)
+                  .then((res) => {
+                    expect(res.body.service).toMatchObject(serviceObj);
+                  });
+              });
+              test("POST 400: Responds with an appropriate status and error message when provided with no name", () => {
+                return request(app)
+                  .post("/api/services")
+                  .send({
+                    duration: 60,
+                    price: "60.00",
+                    description: "A full body painting design"
+                  })
+                  .expect(400)
+                  .then((res) => {
+                    expect(res.body.msg).toBe("Bad Request");
+                  });
+              });
+              test("POST 400: Responds with an appropriate status and error message when provided with no duration", () => {
+                return request(app)
+                  .post("/api/services")
+                  .send({
+                    name: "Body Painting",
+                    price: "60.00",
+                    description: "A full body painting design"
+                  })
+                  .expect(400)
+                  .then((res) => {
+                    expect(res.body.msg).toBe("Bad Request");
+                  });
+              });
+              test("POST 400: Responds with an appropriate status and error message when provided with no price", () => {
+                return request(app)
+                  .post("/api/services")
+                  .send({
+                    name: "Body Painting",
+                    duration: 60,
+                    description: "A full body painting design"
+                  })
+                  .expect(400)
+                  .then((res) => {
+                    expect(res.body.msg).toBe("Bad Request");
+                  });
+              });
+              })

@@ -23,7 +23,7 @@ const seed = () => {
           service_id SERIAL PRIMARY KEY,
           name VARCHAR(100) NOT NULL,
           duration INT NOT NULL,
-          price DECIMAL(10,2),
+          price DECIMAL(10,2) NOT NULL,
           description TEXT
         );
       `);

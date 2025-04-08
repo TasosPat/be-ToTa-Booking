@@ -30,3 +30,5 @@ module.exports = [
         description: 'Professional SFX makeup for Halloween and theatre.'
     }
 ]
+
+// { name, duration, price, description }
