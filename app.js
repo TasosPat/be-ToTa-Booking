@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const { getServices, addService } = require("./controllers/servicesControllers.js");
+const { getServices, addService, deleteService } = require("./controllers/servicesControllers.js");
 const { addUser, getUserByID, getBookings, deleteUser, getUsers } = require("./controllers/usersControllers.js");
 const { addBooking, deleteBooking } = require("./controllers/bookingControllers.js");
 
@@ -15,6 +15,7 @@ app.get('/api/health', (req, res) => {
 
 app.get('/api/services', getServices);
 app.post('/api/services', addService);
+app.delete('/api/services/:service_id', deleteService);
 
 app.post('/api/users', addUser);
 app.get('/api/users', getUsers);

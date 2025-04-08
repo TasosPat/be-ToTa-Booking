@@ -14,4 +14,18 @@ function insertService({ name, duration, price, description }) {
     })
 }
 
-module.exports = {fetchServices, insertService};
+function removeService(service_id) {
+  return db
+  .query(`DELETE FROM services WHERE service_id = $1`, [service_id])
+  .then(({ rowCount }) => {
+    if (rowCount === 0) {
+      return Promise.reject({
+        msg: `Service with ID "${service_id}" is not found`,
+        status: 404,
+      });
+    }
+    // { msg: 'Service deleted successfully' }
+  });
+}
+
+module.exports = {fetchServices, insertService, removeService};

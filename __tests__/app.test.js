@@ -321,3 +321,29 @@ describe("GET /api/services", () => {
                   });
               });
               })
+              describe.only("DELETE /api/services/:service_id", () => {
+                test('204: gets an empty object for a deleted service', () => {
+                  return request(app)
+                    .delete("/api/services/1")
+                    .expect(204)
+                    .then((res) => {
+                      expect(res.body).toEqual({});
+                    })                      
+                });
+                test("DELETE 404: Responds with an appropriate status and error message when provided with a service_id that doesn't exist", () => {
+                  return request(app)
+                    .delete("/api/services/7")
+                    .expect(404)
+                    .then((res) => {
+                      expect(res.body.msg).toBe('Service with ID "7" is not found')
+                    })
+                });
+                test("DELETE 400: Responds with an appropriate status and error message when provided with an invalid service_id", () => {
+                  return request(app)
+                    .delete("/api/services/not-an-id")
+                    .expect(400)
+                    .then((res) => {
+                      expect(res.body.msg).toBe('Bad Request')
+                    })
+                });
+                })
