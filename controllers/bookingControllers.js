@@ -1,4 +1,4 @@
-const { insertBooking, removeBooking } = require("../models/bookingModels.js");
+const { insertBooking, removeBooking, changeBooking } = require("../models/bookingModels.js");
 
 function addBooking(req, res, next) {
     const newBooking = req.body;
@@ -22,4 +22,22 @@ function deleteBooking(req, res, next) {
     })
 }
 
-module.exports = { addBooking, deleteBooking };
+function updateBooking(req, res, next) {
+    const { booking_id } = req.params;
+    const update = req.body;
+    changeBooking(update, booking_id)
+    .then((booking) => {
+        if (!booking) {
+            return Promise.reject({
+              status: 404,
+              msg: `No booking found for booking_id: ${booking_id}`,
+            });
+          }
+        res.status(200).send({ booking })
+    })
+    .catch((err) => {
+        next(err);
+    })
+}
+
+module.exports = { addBooking, deleteBooking, updateBooking };

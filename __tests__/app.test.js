@@ -321,7 +321,7 @@ describe("GET /api/services", () => {
                   });
               });
               })
-              describe.only("DELETE /api/services/:service_id", () => {
+              describe("DELETE /api/services/:service_id", () => {
                 test('204: gets an empty object for a deleted service', () => {
                   return request(app)
                     .delete("/api/services/1")
@@ -346,4 +346,46 @@ describe("GET /api/services", () => {
                       expect(res.body.msg).toBe('Bad Request')
                     })
                 });
+                })
+                describe("/api/bookings/:booking_id", () => {
+                  test("PATCH: 200 return the updated booking", () => {
+                    return request(app)
+                    .patch("/api/bookings/1")
+                    .send({
+                      service_id: 2,
+                      booking_time: '2025-04-10 15:00:00'
+                    })
+                    .expect(200)
+                    .then((res) => {
+                      const booking = res.body.booking;
+                      expect(booking.user_id).toBe(1);
+                      expect(booking.service_id).toBe(2);
+                      expect(booking.booking_time).toBe(new Date('2025-04-10 15:00:00').toISOString());
+                      expect(booking.status).toBe('pending');  
+                    });
+                  })
+                  test('PATCH:404 sends an appropriate status and error message when given a valid but non-existent id', () => {
+                    return request(app)
+                      .patch('/api/bookings/999')
+                      .send({
+                        service_id: 2,
+                        booking_time: '2025-04-10 15:00:00'
+                      })
+                      .expect(404)
+                      .then((response) => {
+                        expect(response.body.msg).toBe('No booking found for booking_id: 999');
+                      });
+                  });
+                  test('PATCH:400 sends an appropriate status and error message when given an invalid id', () => {
+                    return request(app)
+                      .patch('/api/bookings/not-an-booking')
+                      .send({
+                        service_id: 2,
+                        booking_time: '2025-04-10 15:00:00'
+                      })
+                      .expect(400)
+                      .then((response) => {
+                        expect(response.body.msg).toBe('Bad Request');
+                      });
+                  });
                 })

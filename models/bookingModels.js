@@ -27,4 +27,24 @@ function removeBooking(booking_id) {
     });
 }
 
-module.exports = { insertBooking, removeBooking };
+function changeBooking({ service_id, booking_time, status = "pending" }, booking_id) {
+  let query = `UPDATE bookings SET `;
+  const values = [];
+  if(service_id) {
+    query+= `service_id = $${values.length + 1}, `
+    values.push(service_id);
+  }
+  if(booking_time) {
+    query+= `booking_time = $${values.length + 1}, `
+    values.push(booking_time);
+  }
+  query+= `status = $${values.length + 1} WHERE booking_id = $${values.length + 2} RETURNING *;`
+  values.push(status, booking_id);
+  return db
+  .query(query, values)
+  .then((booking) => {
+    return booking.rows[0];
+  })
+}
+
+module.exports = { insertBooking, removeBooking, changeBooking };
