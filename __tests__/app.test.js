@@ -1,13 +1,23 @@
+jest.mock('firebase-admin', () => ({
+  auth: jest.fn().mockReturnThis(),
+  initializeApp: jest.fn(),
+  credential: { cert: jest.fn() },
+}));
+
 const request = require("supertest");
 const app = require("../app.js");
 const db = require("../db/connection");
 const seed = require('../db/seeds/seed');
+const firebaseAdmin = require('firebase-admin');
 // const endpointsJson = require("../endpoints.json");
 const {bookingsData, servicesData, usersData} = require("../db/data/test-data/index.js");
 // const {convertTimestampToDate, createRef, formatComments} = require("../db/seeds/utils.js");
 
-beforeEach(() => seed({bookingsData, servicesData, usersData}));
-afterAll(() => db.end());
+beforeEach(() => {
+  return seed({ usersData, bookingsData, servicesData });
+});
+
+afterAll(() => {return db.end();})
 
 describe("GET /api/health", () => {
     test("200: Responds with an object containing a message 'Server is running!'", () => {
@@ -247,22 +257,29 @@ describe("GET /api/services", () => {
                 })
             });
             })
-            describe("GET /api/users",() => {
-              test("200: Responds with all users", () => {
-                return request(app)
+          describe.only("GET /api/users",() => {
+              test("200: Responds with all users", async () => {
+                firebaseAdmin.auth().verifyIdToken = jest.fn().mockResolvedValueOnce({
+                  uid: 'adminUID123', // Admin user
+                  full_name: 'Diana Prince',
+                  email: 'diana@example.com'
+                });
+                const response = await request(app)
                 .get('/api/users')
+                .set('Authorization', 'Bearer fakeToken')
                 .expect(200)
-                .then(({body}) => {
-                  expect(body.users).toBeInstanceOf(Array);
-                  expect(body.users.length).toBeGreaterThan(0);
-                  body.users.forEach((user) => {
+                console.log(firebaseAdmin.auth().verifyIdToken.mock.calls);
+
+                
+                  expect(response.body.users).toBeInstanceOf(Array);
+                  expect(response.body.users.length).toBeGreaterThan(0);
+                  response.body.users.forEach((user) => {
                     expect(user).toMatchObject({
                       name: expect.any(String),
                       email: expect.any(String),
                       phone_no: expect.any(String),
                     });
                   });
-                })
               });
             });
             describe("POST /api/services", () => {
@@ -389,7 +406,7 @@ describe("GET /api/services", () => {
                       });
                   });
                 })
-                describe.only("/api/users/:user_id", () => {
+                describe("/api/users/:user_id", () => {
                   test("PATCH: 200 return the updated user", () => {
                     return request(app)
                     .patch("/api/users/1")
@@ -423,6 +440,48 @@ describe("GET /api/services", () => {
                       .send({
                         email: 'alice123@example.com',
                         phone_no: '123-456-7880'
+                      })
+                      .expect(400)
+                      .then((response) => {
+                        expect(response.body.msg).toBe('Bad Request');
+                      });
+                  });
+                })
+                describe("/api/services/:service_id", () => {
+                  test("PATCH: 200 return the updated service", () => {
+                    return request(app)
+                    .patch("/api/services/1")
+                    .send({
+                      duration: 75,
+                      price: 60
+                    })
+                    .expect(200)
+                    .then((res) => {
+                      const service = res.body.service;
+                      expect(service.name).toBe('Full Face Painting');
+                      expect(service.duration).toBe(75);
+                      expect(service.price).toBe("60.00");
+                      expect(service.description).toBe('Complete artistic face painting for events and parties.');
+                    });
+                  })
+                  test('PATCH:404 sends an appropriate status and error message when given a valid but non-existent id', () => {
+                    return request(app)
+                      .patch('/api/services/999')
+                      .send({
+                        duration: 75,
+                        price: 60
+                      })
+                      .expect(404)
+                      .then((response) => {
+                        expect(response.body.msg).toBe('No service found for service_id: 999');
+                      });
+                  });
+                  test('PATCH:400 sends an appropriate status and error message when given an invalid id', () => {
+                    return request(app)
+                      .patch('/api/services/not-a-service')
+                      .send({
+                        duration: 75,
+                        price: 60
                       })
                       .expect(400)
                       .then((response) => {

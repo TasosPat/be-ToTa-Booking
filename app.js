@@ -1,7 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const { getServices, addService, deleteService } = require("./controllers/servicesControllers.js");
+const { authenticate, restrictTo } = require("./middleware/auth");
+const { getServices, addService, deleteService, updateService } = require("./controllers/servicesControllers.js");
 const { addUser, getUserByID, getBookings, deleteUser, getUsers, updateUser } = require("./controllers/usersControllers.js");
 const { addBooking, deleteBooking, updateBooking } = require("./controllers/bookingControllers.js");
 
@@ -16,9 +17,10 @@ app.get('/api/health', (req, res) => {
 app.get('/api/services', getServices);
 app.post('/api/services', addService);
 app.delete('/api/services/:service_id', deleteService);
+app.patch('/api/services/:service_id', updateService);
 
 app.post('/api/users', addUser);
-app.get('/api/users', getUsers);
+app.get('/api/users', authenticate, restrictTo('admin'), getUsers);
 
 app.get('/api/users/:user_id', getUserByID);
 app.delete('/api/users/:user_id', deleteUser);

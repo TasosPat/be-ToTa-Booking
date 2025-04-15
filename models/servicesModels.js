@@ -28,4 +28,33 @@ function removeService(service_id) {
   });
 }
 
-module.exports = {fetchServices, insertService, removeService};
+function changeService({ name, duration, price, description }, service_id) {
+  let query = `UPDATE services SET `;
+  const values = [];
+  if(name) {
+    query+= `name = $${values.length + 1}, `
+    values.push(name);
+  }
+  if(duration) {
+    query+= `duration = $${values.length + 1}, `
+    values.push(duration);
+  }
+  if(price) {
+    query+= `price = $${values.length + 1}, `
+    values.push(price);
+  }
+  if(description) {
+    query+= `description = $${values.length + 1}, `
+    values.push(description);
+  }
+  query = query.slice(0, -2); 
+  query+= ` WHERE service_id = $${values.length + 1} RETURNING *;`
+  values.push(service_id);
+  return db
+  .query(query, values)
+  .then((service) => {
+    return service.rows[0];
+  })
+}
+
+module.exports = {fetchServices, insertService, removeService, changeService};

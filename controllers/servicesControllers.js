@@ -1,4 +1,4 @@
-const {fetchServices, insertService, removeService} = require("../models/servicesModels.js");
+const {fetchServices, insertService, removeService, changeService} = require("../models/servicesModels.js");
 
 function getServices(req, res, next) {
     fetchServices()
@@ -29,4 +29,22 @@ function deleteService(req, res, next) {
     })
 }
 
-module.exports = {getServices, addService, deleteService};
+function updateService(req, res, next) {
+    const { service_id } = req.params;
+    const update = req.body;
+    changeService(update, service_id)
+    .then((service) => {
+        if (!service) {
+            return Promise.reject({
+              status: 404,
+              msg: `No service found for service_id: ${service_id}`,
+            });
+          }
+        res.status(200).send({ service })
+    })
+    .catch((err) => {
+        next(err);
+    })
+}
+
+module.exports = {getServices, addService, deleteService, updateService};

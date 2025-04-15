@@ -11,9 +11,11 @@ const seed = () => {
       return db.query(`
         CREATE TABLE users (
           user_id SERIAL PRIMARY KEY,
+          firebase_uid VARCHAR(255) UNIQUE NOT NULL,
           name VARCHAR(100) NOT NULL,
           email VARCHAR(100) UNIQUE NOT NULL,
-          phone_no VARCHAR(20)
+          phone_no VARCHAR(20),
+          role VARCHAR(50) CHECK (role IN ('user', 'admin')) DEFAULT 'user'
         );
       `);
     })
@@ -42,8 +44,8 @@ const seed = () => {
     })
     .then(() => {
       const insertUsersQuery = format(
-        `INSERT INTO users (name, email, phone_no) VALUES %L RETURNING *;`,
-        usersData.map(({ name, email, phone_no }) => [name, email, phone_no])
+        `INSERT INTO users (firebase_uid, name, email, phone_no, role) VALUES %L RETURNING *;`,
+        usersData.map(({ firebase_uid, name, email, phone_no, role }) => [firebase_uid, name, email, phone_no, role])
       );
       return db.query(insertUsersQuery);
     })
