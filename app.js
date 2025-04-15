@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const { getServices, addService, deleteService } = require("./controllers/servicesControllers.js");
-const { addUser, getUserByID, getBookings, deleteUser, getUsers } = require("./controllers/usersControllers.js");
+const { addUser, getUserByID, getBookings, deleteUser, getUsers, updateUser } = require("./controllers/usersControllers.js");
 const { addBooking, deleteBooking, updateBooking } = require("./controllers/bookingControllers.js");
 
 app.use(cors());
@@ -22,6 +22,7 @@ app.get('/api/users', getUsers);
 
 app.get('/api/users/:user_id', getUserByID);
 app.delete('/api/users/:user_id', deleteUser);
+app.patch('/api/users/:user_id', updateUser);
 
 app.get('/api/bookings', getBookings);
 

@@ -67,4 +67,29 @@ function fetchUsers() {
   })
 }
 
-module.exports = {insertUser, fetchUserByID, fetchBookings, removeUser, fetchUsers};
+function changeUser({ name, email, phone_no }, user_id) {
+  let query = `UPDATE users SET `;
+  const values = [];
+  if(name) {
+    query+= `name = $${values.length + 1}, `
+    values.push(name);
+  }
+  if(email) {
+    query+= `email = $${values.length + 1}, `
+    values.push(email);
+  }
+  if(phone_no) {
+    query+= `phone_no = $${values.length + 1}, `
+    values.push(phone_no);
+  }
+  query = query.slice(0, -2); 
+  query+= ` WHERE user_id = $${values.length + 1} RETURNING *;`
+  values.push(user_id);
+  return db
+  .query(query, values)
+  .then((user) => {
+    return user.rows[0];
+  })
+}
+
+module.exports = {insertUser, fetchUserByID, fetchBookings, removeUser, fetchUsers, changeUser};

@@ -1,4 +1,4 @@
-const {insertUser, fetchUserByID, fetchBookings, removeUser, fetchUsers } = require("../models/usersModels.js");
+const {insertUser, fetchUserByID, fetchBookings, removeUser, fetchUsers, changeUser } = require("../models/usersModels.js");
 
 function addUser(req, res, next) {
     const newUser = req.body;
@@ -54,4 +54,22 @@ function getUsers(req, res, next) {
     })
 }
 
-module.exports = {addUser, getUserByID, getBookings, deleteUser, getUsers};
+function updateUser(req, res, next) {
+    const { user_id } = req.params;
+    const update = req.body;
+    changeUser(update, user_id)
+    .then((user) => {
+        if (!user) {
+            return Promise.reject({
+              status: 404,
+              msg: `No user found for user_id: ${user_id}`,
+            });
+          }
+        res.status(200).send({ user })
+    })
+    .catch((err) => {
+        next(err);
+    })
+}
+
+module.exports = {addUser, getUserByID, getBookings, deleteUser, getUsers, updateUser};

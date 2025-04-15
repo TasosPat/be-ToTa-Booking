@@ -378,10 +378,51 @@ describe("GET /api/services", () => {
                   });
                   test('PATCH:400 sends an appropriate status and error message when given an invalid id', () => {
                     return request(app)
-                      .patch('/api/bookings/not-an-booking')
+                      .patch('/api/bookings/not-a-booking')
                       .send({
                         service_id: 2,
                         booking_time: '2025-04-10 15:00:00'
+                      })
+                      .expect(400)
+                      .then((response) => {
+                        expect(response.body.msg).toBe('Bad Request');
+                      });
+                  });
+                })
+                describe.only("/api/users/:user_id", () => {
+                  test("PATCH: 200 return the updated user", () => {
+                    return request(app)
+                    .patch("/api/users/1")
+                    .send({
+                      email: 'alice123@example.com',
+                      phone_no: '123-456-7880'
+                    })
+                    .expect(200)
+                    .then((res) => {
+                      const user = res.body.user;
+                      expect(user.name).toBe('Alice Johnson');
+                      expect(user.email).toBe('alice123@example.com');
+                      expect(user.phone_no).toBe('123-456-7880');
+                    });
+                  })
+                  test('PATCH:404 sends an appropriate status and error message when given a valid but non-existent id', () => {
+                    return request(app)
+                      .patch('/api/users/999')
+                      .send({
+                        email: 'alice123@example.com',
+                        phone_no: '123-456-7880'
+                      })
+                      .expect(404)
+                      .then((response) => {
+                        expect(response.body.msg).toBe('No user found for user_id: 999');
+                      });
+                  });
+                  test('PATCH:400 sends an appropriate status and error message when given an invalid id', () => {
+                    return request(app)
+                      .patch('/api/users/not-a-user')
+                      .send({
+                        email: 'alice123@example.com',
+                        phone_no: '123-456-7880'
                       })
                       .expect(400)
                       .then((response) => {
