@@ -259,18 +259,18 @@ describe("GET /api/services", () => {
             })
           describe.only("GET /api/users",() => {
               test("200: Responds with all users", async () => {
-                firebaseAdmin.auth().verifyIdToken = jest.fn().mockResolvedValueOnce({
-                  uid: 'adminUID123', // Admin user
-                  full_name: 'Diana Prince',
-                  email: 'diana@example.com'
+                firebaseAdmin.auth.mockReturnValue({
+                  verifyIdToken: jest.fn().mockResolvedValue({
+                    uid: 'adminUID123',
+                    full_name: 'Diana Prince',
+                    email: 'diana@example.com',
+                  }),
                 });
                 const response = await request(app)
                 .get('/api/users')
                 .set('Authorization', 'Bearer fakeToken')
                 .expect(200)
-                console.log(firebaseAdmin.auth().verifyIdToken.mock.calls);
-
-                
+            
                   expect(response.body.users).toBeInstanceOf(Array);
                   expect(response.body.users.length).toBeGreaterThan(0);
                   response.body.users.forEach((user) => {
