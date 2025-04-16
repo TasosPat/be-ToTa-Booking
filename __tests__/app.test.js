@@ -13,11 +13,13 @@ const firebaseAdmin = require('firebase-admin');
 const {bookingsData, servicesData, usersData} = require("../db/data/test-data/index.js");
 // const {convertTimestampToDate, createRef, formatComments} = require("../db/seeds/utils.js");
 
-beforeEach(() => {
-  return seed({ usersData, bookingsData, servicesData });
+beforeEach(async () => {
+  await seed({ usersData, bookingsData, servicesData });
 });
 
-afterAll(() => {return db.end();})
+afterAll(async () => {
+  await db.end();
+});
 
 describe("GET /api/health", () => {
     test("200: Responds with an object containing a message 'Server is running!'", () => {
@@ -45,32 +47,57 @@ describe("GET /api/services", () => {
     });
   });
 
-  describe("POST /api/users", () => {
-    test("return the new user", () => {
-        const userObj = {
-            name: "Tasos",
-            email: "tasos@gmail.com",
-            phone_no: "6969696969"
-          };
-      return request(app)
+  describe.only("POST /api/users", () => {
+    test("return the new user", async () => {
+      firebaseAdmin.auth.mockReturnValue({
+        verifyIdToken: jest.fn().mockResolvedValue({
+          uid: 'userUID101',
+          name: 'Tasos Pat',
+          email: 'tasos@gmail.com'
+        }),
+      });
+      const response = await request(app)
         .post("/api/users")
-        .send(userObj)
-        .expect(201)
-        .then((res) => {
-          expect(res.body.user).toMatchObject(userObj);
-        });
+        .set('Authorization', 'Bearer fakeToken')
+        .expect(201);
+          expect(response.body.user).toMatchObject({
+            firebase_uid: 'userUID101',
+          name: 'Tasos Pat',
+          email: 'tasos@gmail.com',
+          phone_no: null,
+          role: 'user'
+          });
+        
     });
-    test("POST 400: Responds with an appropriate status and error message when provided with no email", () => {
-      return request(app)
-        .post("/api/users")
-        .send({
-            name: "Tasos",
-            phone_no: "6969696969"
-          })
-        .expect(400)
-        .then((res) => {
-          expect(res.body.msg).toBe("Bad Request");
-        });
+    test('400: Missing email in token causes bad request', async () => {
+      firebaseAdmin.auth.mockReturnValue({
+        verifyIdToken: jest.fn().mockResolvedValue({
+          uid: 'uid123',
+          name: 'Test User'
+        }),
+      });
+    
+      const response = await request(app)
+        .post('/api/users')
+        .set('Authorization', 'Bearer fakeToken')
+        .expect(400);
+      expect(response.body.msg).toBe("Bad Request");
+    });
+    test.only('409: User already exists (duplicate email or uid)', async () => {
+      // Assuming user with this email already exists in test data
+      firebaseAdmin.auth.mockReturnValue({
+        verifyIdToken: jest.fn().mockResolvedValue({
+          uid: 'userUID123',
+          name: 'Alice Duplicate',
+          email: 'alice@example.com'
+        })
+      });
+      const response = await request(app)
+        .post('/api/users')
+        .set('Authorization', 'Bearer fakeToken')
+        .expect(409);
+      
+      expect(response.body.msg).toBe('User already exists');
     });
     })
 
@@ -257,7 +284,7 @@ describe("GET /api/services", () => {
                 })
             });
             })
-          describe.only("GET /api/users",() => {
+          describe("GET /api/users",() => {
               test("200: Responds with all users", async () => {
                 firebaseAdmin.auth.mockReturnValue({
                   verifyIdToken: jest.fn().mockResolvedValue({
@@ -280,6 +307,25 @@ describe("GET /api/services", () => {
                       phone_no: expect.any(String),
                     });
                   });
+              });
+              test("403: Responds with forbidden if a regular user", async () => {
+                firebaseAdmin.auth.mockReturnValue({
+                  verifyIdToken: jest.fn().mockResolvedValue({
+                    uid: 'userUID123',
+                    full_name: 'Alice Johnson',
+                    email: 'alice@example.com',
+                  }),
+                });
+                const response = await request(app)
+                .get('/api/users')
+                .set('Authorization', 'Bearer fakeToken')
+                .expect(403)
+            
+                  expect(response.body.msg).toBe("Forbidden");
+              });
+              test('401: no token provided', async () => {
+                const response = await request(app).get('/api/users').expect(401);
+                expect(response.body.msg).toBe('No token provided');
               });
             });
             describe("POST /api/services", () => {

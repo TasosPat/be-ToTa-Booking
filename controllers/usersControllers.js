@@ -7,6 +7,7 @@ function addUser(req, res, next) {
         res.status(201).send({user});
     })
     .catch((err) => {
+        console.error(err)
         next(err);
     })
 }

@@ -19,7 +19,7 @@ app.post('/api/services', addService);
 app.delete('/api/services/:service_id', deleteService);
 app.patch('/api/services/:service_id', updateService);
 
-app.post('/api/users', addUser);
+app.post('/api/users', authenticate, addUser);
 app.get('/api/users', authenticate, restrictTo('admin'), getUsers);
 
 app.get('/api/users/:user_id', getUserByID);
@@ -37,6 +37,12 @@ app.patch('/api/bookings/:booking_id', updateBooking);
 app.use((err, req, res, next) => {
     if(err.code === "22P02" || err.code === "23502") {
       res.status(400).send({ msg: 'Bad Request' });
+    } else next(err);
+  });
+
+  app.use((err, req, res, next) => {
+    if(err.code === "23505") {
+      res.status(409).send({ msg: 'User already exists' });
     } else next(err);
   });
 

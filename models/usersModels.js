@@ -1,9 +1,11 @@
 const db = require('../db/connection');
 
-function insertUser({name, email, phone_no}) {
+function insertUser({uid, name, email, phone_no }) {
+  console.log(uid,name,email,phone_no)
     return db
-    .query('INSERT INTO users (name, email, phone_no) VALUES ($1, $2, $3) RETURNING *;', [name, email, phone_no])
+    .query('INSERT INTO users (firebase_uid, name, email, phone_no) VALUES ($1, $2, $3, $4) RETURNING *;', [uid, name, email, phone_no])
     .then(({ rows }) => {
+      console.log(rows[0]);
       return rows[0];
     })
 }

@@ -37,7 +37,9 @@ function authenticate(req, res, next) {
           .json({ msg: 'User not found, please register first' });
       }
 
-      req.user.dbUser = result.rows[0]; // Attach user from DB
+      req.user.dbUser = result.rows[0];
+      req.body = { ...req.user };
+      // Attach user from DB
       // console.log(
       //   `🔹 Authenticated as: id=${req.user.dbUser.id}, role=${req.user.dbUser.role}`
       // );
