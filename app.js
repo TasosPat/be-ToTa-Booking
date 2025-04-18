@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const { authenticate, restrictTo } = require("./middleware/auth");
+const { authenticate, restrictTo, checkBookingAccess, checkProfileAccess } = require("./middleware/auth");
 const { getServices, addService, deleteService, updateService } = require("./controllers/servicesControllers.js");
 const { addUser, getUserByID, getBookings, deleteUser, getUsers, updateUser } = require("./controllers/usersControllers.js");
 const { addBooking, deleteBooking, updateBooking } = require("./controllers/bookingControllers.js");
@@ -22,11 +22,11 @@ app.patch('/api/services/:service_id', updateService);
 app.post('/api/users', authenticate, addUser);
 app.get('/api/users', authenticate, restrictTo('admin'), getUsers);
 
-app.get('/api/users/:user_id', getUserByID);
+app.get('/api/users/:user_id', authenticate, checkProfileAccess, getUserByID);
 app.delete('/api/users/:user_id', deleteUser);
 app.patch('/api/users/:user_id', updateUser);
 
-app.get('/api/bookings', getBookings);
+app.get('/api/bookings', authenticate, checkBookingAccess, getBookings);
 
 app.post('/api/bookings', addBooking);
 
