@@ -272,59 +272,87 @@ describe("GET /api/services", () => {
         });
       });
       describe("POST /api/bookings", () => {
-        test("return the new booking", () => {
+        test("return the new booking", async () => {
+          firebaseAdmin.auth.mockReturnValue({
+            verifyIdToken: jest.fn().mockResolvedValue({
+              uid: 'userUID456',
+              name: 'Bob Smith',
+              email: 'bob@example.com'
+            })
+          });
             const bookingObj = {
-                user_id: 5,
+                user_id: 2,
                 service_id: 1,
                 booking_time: '2025-04-24 14:00:00'
               };
               const expected = new Date(bookingObj.booking_time).toISOString();
-          return request(app)
+          const response = await request(app)
             .post("/api/bookings")
             .send(bookingObj)
-            .expect(201)
-            .then((res) => {
-              const received = new Date(res.body.booking.booking_time).toISOString();
-              expect(res.body.booking.user_id).toBe(5);
-              expect(res.body.booking.service_id).toBe(1);
+            .set('Authorization', 'Bearer fakeToken')
+            .expect(201);
+           
+              const received = new Date(response.body.booking.booking_time).toISOString();
+              expect(response.body.booking.user_id).toBe(2);
+              expect(response.body.booking.service_id).toBe(1);
               expect(received).toBe(expected);
-            });
         });
-        test("POST 400: Responds with an appropriate status and error message when provided with no service_id", () => {
-          return request(app)
+        test("POST 400: Responds with an appropriate status and error message when provided with no service_id", async () => {
+          firebaseAdmin.auth.mockReturnValue({
+            verifyIdToken: jest.fn().mockResolvedValue({
+              uid: 'adminUID123',
+              name: 'Diana Prince',
+              email: 'diana@example.com'
+            })
+          });
+          const response = await request(app)
             .post("/api/bookings")
             .send({
               user_id: 5,
               booking_time: '2025-04-24 14:00:00'
             })
-            .expect(400)
-            .then((res) => {
-              expect(res.body.msg).toBe("Bad Request");
-            });
+            .set('Authorization', 'Bearer fakeToken')
+            .expect(400);
+            
+              expect(response.body.msg).toBe("Bad Request");
         });
-        test("POST 400: Responds with an appropriate status and error message when provided with no user_id", () => {
-          return request(app)
+        test("POST 400: Responds with an appropriate status and error message when provided with no user_id", async () => {
+          firebaseAdmin.auth.mockReturnValue({
+            verifyIdToken: jest.fn().mockResolvedValue({
+              uid: 'adminUID123',
+              name: 'Diana Prince',
+              email: 'diana@example.com'
+            })
+          });
+          const response = await request(app)
             .post("/api/bookings")
             .send({
               service_id: 1,
               booking_time: '2025-04-24 14:00:00'
             })
-            .expect(400)
-            .then((res) => {
-              expect(res.body.msg).toBe("Bad Request");
-            });
+            .set('Authorization', 'Bearer fakeToken')
+            .expect(400);
+            
+              expect(response.body.msg).toBe("Bad Request");
         });
-        test("POST 400: Responds with an appropriate status and error message when provided with no booking time", () => {
-          return request(app)
+        test("POST 400: Responds with an appropriate status and error message when provided with no booking time", async () => {
+          firebaseAdmin.auth.mockReturnValue({
+            verifyIdToken: jest.fn().mockResolvedValue({
+              uid: 'adminUID123',
+              name: 'Diana Prince',
+              email: 'diana@example.com'
+            })
+          });
+          const response = await request(app)
             .post("/api/bookings")
             .send({
               user_id: 5,
-              service_id: 1  
+              service_id: 1 
             })
-            .expect(400)
-            .then((res) => {
-              expect(res.body.msg).toBe("Bad Request");
-            });
+            .set('Authorization', 'Bearer fakeToken')
+            .expect(400);
+            
+              expect(response.body.msg).toBe("Bad Request");
         });
         })
         describe("DELETE /api/users/:user_id", () => {
