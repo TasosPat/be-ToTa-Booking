@@ -101,8 +101,8 @@ describe("GET /api/services", () => {
     });
     })
 
-    describe.only("GET /api/users/:user_id", () => {
-        test.only("200: Responds with a single user when an admin makes the request", async () => {
+    describe("GET /api/users/:user_id", () => {
+        test("200: Responds with a single user when an admin makes the request", async () => {
           firebaseAdmin.auth.mockReturnValue({
             verifyIdToken: jest.fn().mockResolvedValue({
               uid: 'userUID123',
@@ -120,22 +120,34 @@ describe("GET /api/services", () => {
               expect(user.email).toBe('alice@example.com');
               expect(user.phone_no).toBe('123-456-7890');
         });
-        test('GET:404 sends an appropriate status and error message when given a valid but non-existent id', () => {
-          return request(app)
+        test('GET:404 sends an appropriate status and error message when given a valid but non-existent id', async () => {
+          firebaseAdmin.auth.mockReturnValue({
+            verifyIdToken: jest.fn().mockResolvedValue({
+              uid: 'adminUID123',
+              name: 'Diana Prince',
+              email: 'diana@example.com'
+            })
+          });
+          const response = await request(app)
             .get('/api/users/999')
-            .expect(404)
-            .then((response) => {
-              console.log(response);
+            .set('Authorization', 'Bearer fakeToken')
+            .expect(404);
               expect(response.body.msg).toBe('No user found for user_id: 999');
-            });
         });
-        test('GET:400 sends an appropriate status and error message when given an invalid id', () => {
-          return request(app)
+        test('GET:400 sends an appropriate status and error message when given an invalid id', async () => {
+          firebaseAdmin.auth.mockReturnValue({
+            verifyIdToken: jest.fn().mockResolvedValue({
+              uid: 'adminUID123',
+              name: 'Diana Prince',
+              email: 'diana@example.com'
+            })
+          });
+          const response = await request(app)
             .get('/api/users/not-a-user')
-            .expect(400)
-            .then((response) => {
+            .set('Authorization', 'Bearer fakeToken')
+            .expect(400);
+    
               expect(response.body.msg).toBe('Bad Request');
-            });
         });
       });
 
