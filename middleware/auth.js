@@ -90,8 +90,10 @@ const restrictTo =
     return next();
   }
   const checkProfileAccess = async (req, res, next) => {
-    const { user_id } = req.params;
+  
+    const user_id = req.params.user_id ?? req.body.user_id;
     const reqUser = req.user.dbUser;
+    console.log(user_id)
   
     if(reqUser.role === "admin") {
       return next();
@@ -105,4 +107,5 @@ const restrictTo =
     }
     return next();
   }
-module.exports = { authenticate, restrictTo, checkBookingAccess, checkProfileAccess };
+  
+module.exports = { authenticate, restrictTo, checkBookingAccess, checkProfileAccess, };
