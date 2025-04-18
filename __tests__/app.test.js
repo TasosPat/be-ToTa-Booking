@@ -47,7 +47,7 @@ describe("GET /api/services", () => {
     });
   });
 
-  describe.only("POST /api/users", () => {
+  describe("POST /api/users", () => {
     test("return the new user", async () => {
       firebaseAdmin.auth.mockReturnValue({
         verifyIdToken: jest.fn().mockResolvedValue({
@@ -83,7 +83,7 @@ describe("GET /api/services", () => {
         .expect(400);
       expect(response.body.msg).toBe("Bad Request");
     });
-    test.only('409: User already exists (duplicate email or uid)', async () => {
+    test('409: User already exists (duplicate email or uid)', async () => {
       // Assuming user with this email already exists in test data
       firebaseAdmin.auth.mockReturnValue({
         verifyIdToken: jest.fn().mockResolvedValue({
@@ -101,17 +101,24 @@ describe("GET /api/services", () => {
     });
     })
 
-    describe("GET /api/users/:user_id", () => {
-        test("200: Responds with a single user", () => {
-          return request(app)
+    describe.only("GET /api/users/:user_id", () => {
+        test.only("200: Responds with a single user when an admin makes the request", async () => {
+          firebaseAdmin.auth.mockReturnValue({
+            verifyIdToken: jest.fn().mockResolvedValue({
+              uid: 'userUID123',
+              name: 'Alice Johnson',
+              email: 'alice@example.com'
+            })
+          });
+          const response = await request(app)
             .get("/api/users/1")
-            .expect(200)
-            .then((response) => {
+            .set('Authorization', 'Bearer fakeToken')
+            .expect(200);
+           
               const user = response.body.user;
               expect(user.name).toBe('Alice Johnson');
               expect(user.email).toBe('alice@example.com');
               expect(user.phone_no).toBe('123-456-7890');
-            });
         });
         test('GET:404 sends an appropriate status and error message when given a valid but non-existent id', () => {
           return request(app)
@@ -132,48 +139,124 @@ describe("GET /api/services", () => {
         });
       });
 
-      describe("GET /api/bookings/:user_id", () => {
-        test("200: Responds with all bookings", () => {
-          return request(app)
+      describe("GET /api/bookings", () => {
+        test("200: Responds with all bookings when an admin is logged in", async () => {
+          firebaseAdmin.auth.mockReturnValue({
+            verifyIdToken: jest.fn().mockResolvedValue({
+              uid: 'adminUID123',
+              name: 'Diana Prince',
+              email: 'diana@example.com'
+            })
+          });
+          const response = await request(app)
             .get("/api/bookings")
-            .expect(200)
-            .then((response) => {
+            .set('Authorization', 'Bearer fakeToken')
+            .expect(200);
+  
               const bookings = response.body.bookings;
               expect(bookings[0].user_id).toBe(1);
               expect(bookings[0].service_id).toBe(1);
               expect(bookings[0].status).toBe("confirmed");
-            });
         });
-        test("200: Responds with all bookings for service_id 2", () => {
-          return request(app)
-            .get("/api/bookings?service_id=2")
-            .expect(200)
-            .then((response) => {
-              const bookings = response.body.bookings;
-              expect(bookings[0].user_id).toBe(4);
-              expect(bookings[0].status).toBe("cancelled");
-            });
+        test("200: Responds with all bookings for service_id 5 when the user who made the booking is logged in", async () => {
+          firebaseAdmin.auth.mockReturnValue({
+            verifyIdToken: jest.fn().mockResolvedValue({
+              uid: 'userUID789',
+              name: 'Charlie Brown',
+              email: 'charlie@example.com'
+            })
+          });
+          const response = await request(app)
+            .get("/api/bookings?service_id=5")
+            .set('Authorization', 'Bearer fakeToken')
+            .expect(200);
+
+            const bookings = response.body.bookings;
+              expect(bookings[0].user_id).toBe(3);
+              expect(bookings[0].service_id).toBe(5);
+              expect(bookings[0].status).toBe("confirmed");
         });
-        test("200: Responds with all bookings for user_id 3", () => {
-          return request(app)
+        test("200: Responds with all bookings for service_id 5 when an admin is logged in", async () => {
+          firebaseAdmin.auth.mockReturnValue({
+            verifyIdToken: jest.fn().mockResolvedValue({
+              uid: 'adminUID123',
+              name: 'Diana Prince',
+              email: 'diana@example.com'
+            })
+          });
+          const response = await request(app)
+            .get("/api/bookings?service_id=5")
+            .set('Authorization', 'Bearer fakeToken')
+            .expect(200);
+
+            const bookings = response.body.bookings;
+              expect(bookings[0].user_id).toBe(3);
+              expect(bookings[0].service_id).toBe(5);
+              expect(bookings[0].status).toBe("confirmed");
+        });
+        test("200: Responds with all bookings for user_id 3 when the user who made the booking is logged in", async () => {
+          firebaseAdmin.auth.mockReturnValue({
+            verifyIdToken: jest.fn().mockResolvedValue({
+              uid: 'userUID789',
+              name: 'Charlie Brown',
+              email: 'charlie@example.com'
+            })
+          });
+          const response = await request(app)
             .get("/api/bookings?user_id=3")
+            .set('Authorization', 'Bearer fakeToken')
             .expect(200)
-            .then((response) => {
               const bookings = response.body.bookings;
               expect(bookings[0].service_id).toBe(5);
               expect(bookings[0].status).toBe("confirmed");
-            });
         });
-        test("200: Responds with all bookings for booking_id 5", () => {
-          return request(app)
-            .get("/api/bookings?booking_id=5")
-            .expect(200)
-            .then((response) => {
+        test("200: Responds with the booking with booking_id 2 when the user who made the booking is logged in", async () => {
+          firebaseAdmin.auth.mockReturnValue({
+            verifyIdToken: jest.fn().mockResolvedValue({
+              uid: 'userUID456',
+              name: 'Bob Smith',
+              email: 'bob@example.com'
+            })
+          });
+          const response = await request(app)
+            .get("/api/bookings?booking_id=2")
+            .set('Authorization', 'Bearer fakeToken')
+            .expect(200);
+        
               const bookings = response.body.bookings;
-              expect(bookings[0].user_id).toBe(5);
-              expect(bookings[0].service_id).toBe(4);
+              expect(bookings[0].user_id).toBe(2);
+              expect(bookings[0].service_id).toBe(3);
+              expect(bookings[0].status).toBe("pending");
+        });
+        test("200: Responds with the bookings of user 1 with service_id 1 when the user who made the bookings is logged in", async () => {
+          firebaseAdmin.auth.mockReturnValue({
+            verifyIdToken: jest.fn().mockResolvedValue({
+              uid: 'userUID123',
+              name: 'Alice Johnson',
+              email: 'alice@example.com'
+            })
+          });
+          const response = await request(app)
+            .get("/api/bookings?user_id=1&service_id=1")
+            .set('Authorization', 'Bearer fakeToken')
+            .expect(200);
+        
+              const bookings = response.body.bookings;
+              expect(bookings[0].user_id).toBe(1);
+              expect(bookings[0].service_id).toBe(1);
               expect(bookings[0].status).toBe("confirmed");
-            });
+              expect(bookings).toEqual([
+                expect.objectContaining({
+                  user_id: 1,
+                service_id: 1,
+                status: 'confirmed'
+                }),
+                expect.objectContaining({
+                  user_id: 1,
+                service_id: 1,
+                status: 'pending'
+                }) 
+            ])
         });
       });
       describe("POST /api/bookings", () => {
