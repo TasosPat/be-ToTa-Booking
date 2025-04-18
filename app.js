@@ -28,7 +28,7 @@ app.patch('/api/users/:user_id', updateUser);
 
 app.get('/api/bookings', authenticate, checkBookingAccess, getBookings);
 
-app.post('/api/bookings', addBooking);
+app.post('/api/bookings', authenticate, checkProfileAccess, addBooking);
 
 app.delete('/api/bookings/:booking_id', deleteBooking);
 app.patch('/api/bookings/:booking_id', updateBooking);
